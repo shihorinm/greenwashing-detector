@@ -191,15 +191,17 @@ def main():
     # 例文ライブラリの表示
     if st.session_state.get('show_examples', False):
         show_example_library()
-        if st.button("閉じる"):
+        if st.button("🏠 ホームに戻る", type="primary"):
             st.session_state.show_examples = False
+            st.rerun()
         return
     
     # 診断履歴の表示
     if st.session_state.get('show_history', False):
         show_diagnosis_history()
-        if st.button("閉じる"):
+        if st.button("🏠 ホームに戻る", type="primary"):
             st.session_state.show_history = False
+            st.rerun()
         return
     
     # メインコンテンツ
@@ -649,6 +651,12 @@ def display_result(result, spreadsheet_id, worksheet_name):
                     st.error(f"❌ エラー: {str(e)}")
         else:
             st.info("📊 スプレッドシート出力には、サイドバーでIDとシート名を設定してください")
+    
+    # HOMEボタン
+    st.markdown("---")
+    if st.button("🏠 ホームに戻る", type="primary", use_container_width=False):
+        st.session_state.current_result = None
+        st.rerun()
 
 def show_example_library():
     """例文ライブラリを表示"""
