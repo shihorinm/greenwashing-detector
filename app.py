@@ -511,34 +511,34 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                 st.rerun()
         
         if diagnose_btn:
-        if not api_key:
-            st.error("❌ APIキーを入力してください")
-            return
-        
-        # 診断実行
-        with st.spinner("🔄 AI分析中（動画の処理には時間がかかります）..."):
-            try:
-                ai_handler = AIHandler(model_key, api_key)
-                ai_response = analyze_video_content(ai_handler, video_data, system_prompt, criteria_sections)
-                result = evaluate_result(ai_response)
-                
-                result['content_type'] = '動画'
-                result['version'] = version
-                result['directives'] = directive_label
-                result['content_sample'] = video_source
-                
-                st.session_state.current_result = result
-                st.session_state.diagnosis_history.append({
-                    'timestamp': datetime.now(),
-                    'type': '動画',
-                    'result': result
-                })
-                
-            except Exception as e:
-                st.error(f"❌ エラーが発生しました: {str(e)}")
+            if not api_key:
+                st.error("❌ APIキーを入力してください")
                 return
-        
-        display_result(result, spreadsheet_id, worksheet_name)
+            
+            # 診断実行
+            with st.spinner("🔄 AI分析中（動画の処理には時間がかかります）..."):
+                try:
+                    ai_handler = AIHandler(model_key, api_key)
+                    ai_response = analyze_video_content(ai_handler, video_data, system_prompt, criteria_sections)
+                    result = evaluate_result(ai_response)
+                    
+                    result['content_type'] = '動画'
+                    result['version'] = version
+                    result['directives'] = directive_label
+                    result['content_sample'] = video_source
+                    
+                    st.session_state.current_result = result
+                    st.session_state.diagnosis_history.append({
+                        'timestamp': datetime.now(),
+                        'type': '動画',
+                        'result': result
+                    })
+                    
+                except Exception as e:
+                    st.error(f"❌ エラーが発生しました: {str(e)}")
+                    return
+            
+            display_result(result, spreadsheet_id, worksheet_name)
 
 def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
                        version, directive_label, spreadsheet_id, worksheet_name):
@@ -756,4 +756,3 @@ def show_diagnosis_history():
 
 if __name__ == "__main__":
     main()
-
