@@ -30,7 +30,7 @@ class AIHandler:
             raise ValueError(f"Unsupported model type: {model_type}")
     
     def analyze_text(self, system_prompt: str, user_prompt: str, 
-                     max_tokens: int = 4000) -> Dict[str, Any]:
+                     max_tokens: int = 2000) -> Dict[str, Any]:
         """
         テキスト分析を実行
         
@@ -89,7 +89,7 @@ class AIHandler:
             }
     
     def analyze_image(self, system_prompt: str, user_prompt: str, 
-                     image_data: bytes, max_tokens: int = 4000) -> Dict[str, Any]:
+                     image_data: bytes, max_tokens: int = 2000) -> Dict[str, Any]:
         """
         画像分析を実行
         
