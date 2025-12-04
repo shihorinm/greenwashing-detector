@@ -1,5 +1,5 @@
 """
-ClimateWash診断ツール - メインアプリケーション
+ClimateWash解析ツール - メインアプリケーション
 """
 import streamlit as st
 import sys
@@ -40,7 +40,7 @@ def auto_save_to_sheet(result, spreadsheet_id, worksheet_name):
 
 # ページ設定
 st.set_page_config(
-    page_title="ClimateWash診断ツール",
+    page_title="ClimateWash解析ツール",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -64,8 +64,8 @@ def main():
     # ヘッダー
     st.markdown("""
     <div style='text-align: center; padding: 20px; background: linear-gradient(90deg, #2E7D32 0%, #43A047 100%); border-radius: 10px;'>
-        <h1 style='color: white; margin: 0;'>🌍 ClimateWash診断ツール</h1>
-        <p style='color: white; margin: 10px 0 0 0;'>EU指令準拠 AI自動診断システム</p>
+        <h1 style='color: white; margin: 0;'>🌍 ClimateWash解析ツール</h1>
+        <p style='color: white; margin: 10px 0 0 0;'>EU指令準拠 AI自動解析システム</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -137,7 +137,7 @@ def main():
         
         # 選択に応じた説明
         if green_claims_directive:
-            st.info("✅ 両指令を適用: 包括的な診断を実施します。")
+            st.info("✅ 両指令を適用: 包括的な解析を実施します。")
         else:
             st.warning("⚠️ エンパワメント指令のみ: 最低限の法令遵守チェックです。")
         
@@ -146,7 +146,7 @@ def main():
         st.markdown("---")
         
         # バージョン選択
-        st.markdown("### 📊 診断基準バージョン")
+        st.markdown("### 📊 解析基準バージョン")
         
         version_options = {
             "v1": VERSIONS["v1"]["name"],
@@ -167,52 +167,17 @@ def main():
         
         st.markdown("---")
         
-        # Google Sheets設定
-        with st.expander("📊 Google Sheets設定（オプション）"):
-            st.markdown("### 共有スプレッドシートへの出力")
-            
-            # Secretsから自動読み込み
-            default_spreadsheet_id = ""
-            default_worksheet_name = "診断結果"
-            
-            try:
-                if "SPREADSHEET_ID" in st.secrets:
-                    default_spreadsheet_id = st.secrets["SPREADSHEET_ID"]
-                    st.success("✅ スプレッドシートIDが自動設定されています")
-                if "WORKSHEET_NAME" in st.secrets:
-                    default_worksheet_name = st.secrets["WORKSHEET_NAME"]
-            except:
-                pass
-            
-            st.info("""
-            **全ユーザーの診断結果を1つのスプレッドシートに蓄積**
-            
-            - 管理者がStreamlit Secretsに設定済みの場合は自動的に使用されます
-            - 個別のスプレッドシートを使いたい場合は下記に入力してください
-            
-            設定方法（管理者向け）：
-            1. Googleスプレッドシート作成
-            2. サービスアカウントに「編集者」権限を付与
-            3. Streamlit Secretsに以下を追加:
-               ```
-               SPREADSHEET_ID = "your-spreadsheet-id"
-               WORKSHEET_NAME = "診断結果"
-               ```
-            """)
-            
-            spreadsheet_id = st.text_input(
-                "スプレッドシートID（オプション）",
-                value=default_spreadsheet_id,
-                help="空欄の場合、Secrets設定値を使用。個別に設定する場合はURLの「/d/」と「/edit」の間の文字列を入力"
-            )
-            worksheet_name = st.text_input(
-                "ワークシート名",
-                value=default_worksheet_name,
-                help="結果を記録するシート名"
-            )
-            
-            if spreadsheet_id:
-                st.success(f"✅ 有効: すべての診断結果が「{worksheet_name}」シートに記録されます")
+        # スプレッドシートIDをSecretsから自動読み込み（UIなし）
+        spreadsheet_id = ""
+        worksheet_name = "解析結果"
+        
+        try:
+            if "SPREADSHEET_ID" in st.secrets:
+                spreadsheet_id = st.secrets["SPREADSHEET_ID"]
+            if "WORKSHEET_NAME" in st.secrets:
+                worksheet_name = st.secrets["WORKSHEET_NAME"]
+        except:
+            pass
         
         st.markdown("---")
         
@@ -220,8 +185,8 @@ def main():
         if st.button("💡 適切な表現例を見る"):
             st.session_state.show_examples = True
         
-        # 診断履歴
-        if st.button("📊 診断履歴を見る"):
+        # 解析履歴
+        if st.button("📊 解析履歴を見る"):
             st.session_state.show_history = True
         
         st.markdown("---")
@@ -248,7 +213,7 @@ def main():
             st.rerun()
         return
     
-    # 診断履歴の表示
+    # 解析履歴の表示
     if st.session_state.get('show_history', False):
         show_diagnosis_history()
         if st.button("🏠 ホームに戻る", type="primary"):
@@ -256,50 +221,50 @@ def main():
             st.rerun()
         return
     
-    # 診断結果の表示（最優先）
+    # 解析結果の表示（最優先）
     if st.session_state.get('current_result') is not None:
         display_result(st.session_state.current_result, spreadsheet_id, worksheet_name)
         return
     
-    # メインコンテンツ（診断画面）
+    # メインコンテンツ（解析画面）
     tabs = st.tabs(["📝 テキスト", "🖼️ 画像", "📄 PDF", "🎬 動画", "🌐 Webサイト"])
     
     # システムプロンプト読み込み
     system_prompt = load_system_prompt()
     
-    # 適用する診断基準セクションを取得
+    # 適用する解析基準セクションを取得
     criteria_sections = get_criteria_sections(selected_version, green_claims_directive)
     
-    # タブ1: テキスト診断
+    # タブ1: テキスト解析
     with tabs[0]:
         handle_text_analysis(api_key, model_key, system_prompt, criteria_sections, 
                            selected_version, directive_label, spreadsheet_id, worksheet_name)
     
-    # タブ2: 画像診断
+    # タブ2: 画像解析
     with tabs[1]:
         handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
                             selected_version, directive_label, spreadsheet_id, worksheet_name)
     
-    # タブ3: PDF診断
+    # タブ3: PDF解析
     with tabs[2]:
         handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
                           selected_version, directive_label, spreadsheet_id, worksheet_name)
     
-    # タブ4: 動画診断
+    # タブ4: 動画解析
     with tabs[3]:
         handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                             selected_version, directive_label, spreadsheet_id, worksheet_name)
     
-    # タブ5: Webサイト診断
+    # タブ5: Webサイト解析
     with tabs[4]:
         handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
                           selected_version, directive_label, spreadsheet_id, worksheet_name)
 
 def handle_text_analysis(api_key, model_key, system_prompt, criteria_sections, 
                         version, directive_label, spreadsheet_id, worksheet_name):
-    """テキスト診断の処理"""
-    st.markdown("### 📝 テキスト診断")
-    st.markdown("診断したいテキストを入力してください。")
+    """テキスト解析の処理"""
+    st.markdown("### 📝 テキスト解析")
+    st.markdown("解析したいテキストを入力してください。")
     
     text_input = st.text_area(
         "テキスト入力",
@@ -310,7 +275,7 @@ def handle_text_analysis(api_key, model_key, system_prompt, criteria_sections,
     
     # リアルタイムプレビュー（簡易チェック）
     if text_input and len(text_input) > 10:
-        with st.expander("⚡ クイックチェック（簡易診断）"):
+        with st.expander("⚡ クイックチェック（簡易解析）"):
             quick_result = quick_check_text(text_input)
             if quick_result['has_issues']:
                 st.warning(f"⚠️ {quick_result['issue_count']}種類の潜在的な問題を検出しました")
@@ -322,7 +287,7 @@ def handle_text_analysis(api_key, model_key, system_prompt, criteria_sections,
     
     col1, col2 = st.columns([1, 4])
     with col1:
-        diagnose_btn = st.button("🔍 診断開始", type="primary", use_container_width=True)
+        diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True)
     with col2:
         if st.button("🗑️ 入力クリア", use_container_width=True, key="clear_text"):
             st.rerun()
@@ -336,7 +301,7 @@ def handle_text_analysis(api_key, model_key, system_prompt, criteria_sections,
             st.error("❌ 10文字以上のテキストを入力してください")
             return
         
-        # 診断実行
+        # 解析実行
         with st.spinner("🔄 AI分析中..."):
             try:
                 ai_handler = AIHandler(model_key, api_key)
@@ -368,9 +333,9 @@ def handle_text_analysis(api_key, model_key, system_prompt, criteria_sections,
 
 def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
                          version, directive_label, spreadsheet_id, worksheet_name):
-    """画像診断の処理"""
-    st.markdown("### 🖼️ 画像診断")
-    st.markdown("診断したい画像をアップロードしてください。")
+    """画像解析の処理"""
+    st.markdown("### 🖼️ 画像解析")
+    st.markdown("解析したい画像をアップロードしてください。")
     
     uploaded_file = st.file_uploader(
         "画像ファイル",
@@ -398,7 +363,7 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
         
         col1, col2 = st.columns([1, 4])
         with col1:
-            diagnose_btn = st.button("🔍 診断開始", type="primary", use_container_width=True, key="diagnose_image")
+            diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_image")
         with col2:
             if st.button("🗑️ 画像クリア", use_container_width=True, key="clear_image"):
                 st.rerun()
@@ -408,7 +373,7 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
                 st.error("❌ APIキーを入力してください")
                 return
             
-            # 診断実行
+            # 解析実行
             with st.spinner("🔄 AI分析中（画像解析には少し時間がかかります）..."):
                 try:
                     uploaded_file.seek(0)  # ファイルポインタをリセット
@@ -443,9 +408,9 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
 
 def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
                        version, directive_label, spreadsheet_id, worksheet_name):
-    """PDF診断の処理"""
-    st.markdown("### 📄 PDF診断")
-    st.markdown("診断したいPDFをアップロードしてください。")
+    """PDF解析の処理"""
+    st.markdown("### 📄 PDF解析")
+    st.markdown("解析したいPDFをアップロードしてください。")
     
     uploaded_file = st.file_uploader(
         "PDFファイル",
@@ -466,7 +431,7 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
         
         col1, col2 = st.columns([1, 4])
         with col1:
-            diagnose_btn = st.button("🔍 診断開始", type="primary", use_container_width=True, key="diagnose_pdf")
+            diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_pdf")
         with col2:
             if st.button("🗑️ PDFクリア", use_container_width=True, key="clear_pdf"):
                 st.rerun()
@@ -476,7 +441,7 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
                 st.error("❌ APIキーを入力してください")
                 return
             
-            # 診断実行
+            # 解析実行
             with st.spinner("🔄 AI分析中（PDFの処理には時間がかかります）..."):
                 try:
                     uploaded_file.seek(0)
@@ -511,10 +476,10 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
 
 def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                          version, directive_label, spreadsheet_id, worksheet_name):
-    """動画診断の処理"""
-    st.markdown("### 🎬 動画診断")
-    st.markdown("診断したい動画をアップロードしてください（最長60秒まで処理）。")
-    st.info("💡 YouTube動画を診断したい場合は、事前にダウンロードしてからアップロードしてください。")
+    """動画解析の処理"""
+    st.markdown("### 🎬 動画解析")
+    st.markdown("解析したい動画をアップロードしてください（最長60秒まで処理）。")
+    st.info("💡 YouTube動画を解析したい場合は、事前にダウンロードしてからアップロードしてください。")
     
     uploaded_file = st.file_uploader(
         "動画ファイル",
@@ -540,7 +505,7 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
         
         col1, col2 = st.columns([1, 4])
         with col1:
-            diagnose_btn = st.button("🔍 診断開始", type="primary", use_container_width=True, key="diagnose_video")
+            diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_video")
         with col2:
             if st.button("🗑️ 動画クリア", use_container_width=True, key="clear_video"):
                 st.rerun()
@@ -550,7 +515,7 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                 st.error("❌ APIキーを入力してください")
                 return
             
-            # 診断実行
+            # 解析実行
             with st.spinner("🔄 AI分析中（動画の処理には時間がかかります）..."):
                 try:
                     ai_handler = AIHandler(model_key, api_key)
@@ -582,9 +547,9 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
 
 def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
                        version, directive_label, spreadsheet_id, worksheet_name):
-    """Webサイト診断の処理"""
-    st.markdown("### 🌐 Webサイト診断")
-    st.markdown("診断したいWebサイトのURLを入力してください。")
+    """Webサイト解析の処理"""
+    st.markdown("### 🌐 Webサイト解析")
+    st.markdown("解析したいWebサイトのURLを入力してください。")
     
     url_input = st.text_input(
         "URL",
@@ -613,7 +578,7 @@ def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
         
         col1, col2 = st.columns([1, 4])
         with col1:
-            diagnose_btn = st.button("🔍 診断開始", type="primary", use_container_width=True, key="diagnose_web")
+            diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_web")
         with col2:
             if st.button("🗑️ URLクリア", use_container_width=True, key="clear_web"):
                 st.rerun()
@@ -623,7 +588,7 @@ def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
                 st.error("❌ APIキーを入力してください")
                 return
             
-            # 診断実行
+            # 解析実行
             with st.spinner("🔄 AI分析中（Webページの処理には時間がかかります）..."):
                 try:
                     ai_handler = AIHandler(model_key, api_key)
@@ -654,9 +619,9 @@ def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
             
 
 def display_result(result, spreadsheet_id, worksheet_name):
-    """診断結果を表示"""
+    """解析結果を表示"""
     st.markdown("---")
-    st.markdown("## 📊 診断結果")
+    st.markdown("## 📊 解析結果")
     
     if not result.get('success', False):
         st.error(f"❌ {result.get('error', '不明なエラー')}")
@@ -760,11 +725,11 @@ def show_example_library():
                 st.markdown("---")
 
 def show_diagnosis_history():
-    """診断履歴を表示"""
-    st.markdown("## 📊 診断履歴")
+    """解析履歴を表示"""
+    st.markdown("## 📊 解析履歴")
     
     if not st.session_state.diagnosis_history:
-        st.info("まだ診断履歴がありません。")
+        st.info("まだ解析履歴がありません。")
         return
     
     # 履歴を時系列で表示
@@ -776,7 +741,7 @@ def show_diagnosis_history():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("総診断数", len(history))
+        st.metric("総解析数", len(history))
     
     with col2:
         avg_score = sum(h['result']['score'] for h in history) / len(history)
@@ -792,12 +757,12 @@ def show_diagnosis_history():
             t = h['type']
             type_counts[t] = type_counts.get(t, 0) + 1
         most_common = max(type_counts.items(), key=lambda x: x[1])[0] if type_counts else "なし"
-        st.metric("最多診断タイプ", most_common)
+        st.metric("最多解析タイプ", most_common)
     
     st.markdown("---")
     
     # 履歴リスト
-    st.markdown("### 📋 診断リスト")
+    st.markdown("### 📋 解析リスト")
     
     for i, entry in enumerate(history):
         timestamp = entry['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
