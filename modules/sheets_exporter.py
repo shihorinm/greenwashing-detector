@@ -38,17 +38,22 @@ class SheetsExporter:
             成功したかどうか
         """
         try:
+            print(f"[DEBUG] スプレッドシート出力開始: {spreadsheet_id}")
+            
             # スプレッドシートを開く
             sheet = self.client.open_by_key(spreadsheet_id)
+            print(f"[DEBUG] スプレッドシート取得成功: {sheet.title}")
             
             # ワークシートを取得（なければ作成）
             try:
                 worksheet = sheet.worksheet(worksheet_name)
+                print(f"[DEBUG] ワークシート取得成功: {worksheet_name}")
             except gspread.exceptions.WorksheetNotFound:
+                print(f"[DEBUG] ワークシート作成中: {worksheet_name}")
                 worksheet = sheet.add_worksheet(
                     title=worksheet_name, 
                     rows=1000, 
-                    cols=10
+                    cols=11  # 11列に修正
                 )
                 # ヘッダー行を追加
                 headers = [
@@ -57,6 +62,7 @@ class SheetsExporter:
                     "是正提案", "まとめ"
                 ]
                 worksheet.append_row(headers)
+                print(f"[DEBUG] ヘッダー行追加完了")
             
             # データ行を準備
             row = [
@@ -73,13 +79,17 @@ class SheetsExporter:
                 results.get('summary', '')[:500]  # 500文字まで
             ]
             
+            print(f"[DEBUG] データ行を追加中: {len(row)}列")
             # 行を追加
             worksheet.append_row(row)
+            print(f"[DEBUG] データ行追加完了")
             
             return True
         except Exception as e:
-            print(f"スプレッドシート出力エラー: {str(e)}")
-            return False
+            print(f"[ERROR] スプレッドシート出力エラー: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            raise  # エラーを再度投げる
     
     def _format_violations(self, violations: list) -> str:
         """違反項目をフォーマット"""
