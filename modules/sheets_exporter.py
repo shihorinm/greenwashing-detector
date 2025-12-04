@@ -52,7 +52,7 @@ class SheetsExporter:
                 )
                 # ヘッダー行を追加
                 headers = [
-                    "診断日時", "コンテンツタイプ", "適用指令", "診断バージョン",
+                    "診断日時", "コンテンツタイプ", "診断対象", "適用指令", "診断バージョン",
                     "総合評価", "スコア", "違反項目数", "違反詳細", 
                     "是正提案", "まとめ"
                 ]
@@ -62,6 +62,7 @@ class SheetsExporter:
             row = [
                 datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                 results.get('content_type', '不明'),
+                results.get('content_sample', '')[:500],  # 診断対象（500文字まで）
                 results.get('directives', '不明'),
                 results.get('version', '不明'),
                 results.get('overall_risk', '不明'),
