@@ -81,6 +81,7 @@ def main():
             st.session_state.show_history = False
             st.rerun()
         
+        st.markdown("<br>", unsafe_allow_html=True)  # スペース追加
         st.markdown("---")
         
         st.markdown("## ⚙️ 設定")
