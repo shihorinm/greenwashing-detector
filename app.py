@@ -19,6 +19,7 @@ from modules.video_analyzer import analyze_video_content, get_video_info
 from modules.web_analyzer import analyze_web_content, get_web_info
 from modules.sheets_exporter import SheetsExporter, load_credentials_from_streamlit_secrets
 from modules.pdf_reporter import generate_pdf_report
+from modules.word_reporter import generate_word_report
 from config.criteria import VERSIONS, get_criteria_sections, EXAMPLE_LIBRARY, get_risk_level
 
 # ページ設定
@@ -152,15 +153,50 @@ def main():
         
         # Google Sheets設定
         with st.expander("📊 Google Sheets設定（オプション）"):
+            st.markdown("### 共有スプレッドシートへの出力")
+            
+            # Secretsから自動読み込み
+            default_spreadsheet_id = ""
+            default_worksheet_name = "診断結果"
+            
+            try:
+                if "SPREADSHEET_ID" in st.secrets:
+                    default_spreadsheet_id = st.secrets["SPREADSHEET_ID"]
+                    st.success("✅ スプレッドシートIDが自動設定されています")
+                if "WORKSHEET_NAME" in st.secrets:
+                    default_worksheet_name = st.secrets["WORKSHEET_NAME"]
+            except:
+                pass
+            
+            st.info("""
+            **全ユーザーの診断結果を1つのスプレッドシートに蓄積**
+            
+            - 管理者がStreamlit Secretsに設定済みの場合は自動的に使用されます
+            - 個別のスプレッドシートを使いたい場合は下記に入力してください
+            
+            設定方法（管理者向け）：
+            1. Googleスプレッドシート作成
+            2. サービスアカウントに「編集者」権限を付与
+            3. Streamlit Secretsに以下を追加:
+               ```
+               SPREADSHEET_ID = "your-spreadsheet-id"
+               WORKSHEET_NAME = "診断結果"
+               ```
+            """)
+            
             spreadsheet_id = st.text_input(
-                "スプレッドシートID",
-                help="URLの「/d/」と「/edit」の間の文字列"
+                "スプレッドシートID（オプション）",
+                value=default_spreadsheet_id,
+                help="空欄の場合、Secrets設定値を使用。個別に設定する場合はURLの「/d/」と「/edit」の間の文字列を入力"
             )
             worksheet_name = st.text_input(
                 "ワークシート名",
-                value="診断結果",
+                value=default_worksheet_name,
                 help="結果を記録するシート名"
             )
+            
+            if spreadsheet_id:
+                st.success(f"✅ 有効: すべての診断結果が「{worksheet_name}」シートに記録されます")
         
         st.markdown("---")
         
@@ -605,37 +641,51 @@ def display_result(result, spreadsheet_id, worksheet_name):
     st.markdown(formatted_result)
     
     # アクション
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         # PDFダウンロード
         try:
             pdf_data = generate_pdf_report(result)
             st.download_button(
-                label="📄 PDFレポートをダウンロード",
+                label="📄 PDF",
                 data=pdf_data,
                 file_name=f"climatewash_report_{datetime.now():%Y%m%d_%H%M%S}.pdf",
                 mime="application/pdf",
                 use_container_width=True
             )
         except Exception as e:
-            st.error(f"PDFレポート生成エラー: {str(e)}")
+            st.error(f"PDFエラー: {str(e)}")
     
     with col2:
+        # Wordダウンロード
+        try:
+            word_data = generate_word_report(result)
+            st.download_button(
+                label="📝 Word",
+                data=word_data,
+                file_name=f"climatewash_report_{datetime.now():%Y%m%d_%H%M%S}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True
+            )
+        except Exception as e:
+            st.error(f"Wordエラー: {str(e)}")
+    
+    with col3:
         # JSON結果をダウンロード
         result_json = json.dumps(result, ensure_ascii=False, indent=2)
         st.download_button(
-            label="📥 JSON結果をダウンロード",
+            label="📥 JSON",
             data=result_json,
             file_name=f"climatewash_result_{datetime.now():%Y%m%d_%H%M%S}.json",
             mime="application/json",
             use_container_width=True
         )
     
-    with col3:
+    with col4:
         # Googleスプレッドシートに出力
         if spreadsheet_id and worksheet_name:
-            if st.button("📊 Googleスプレッドシートに出力", use_container_width=True):
+            if st.button("📊 Sheet", use_container_width=True):
                 try:
                     credentials = load_credentials_from_streamlit_secrets(st)
                     if credentials:
@@ -650,7 +700,7 @@ def display_result(result, spreadsheet_id, worksheet_name):
                 except Exception as e:
                     st.error(f"❌ エラー: {str(e)}")
         else:
-            st.info("📊 スプレッドシート出力には、サイドバーでIDとシート名を設定してください")
+            st.info("📊 設定必要")
     
     # HOMEボタン
     st.markdown("---")
