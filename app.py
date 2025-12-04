@@ -24,7 +24,7 @@ from config.criteria import VERSIONS, get_criteria_sections, EXAMPLE_LIBRARY, ge
 
 # ページ設定
 st.set_page_config(
-    page_title="ClimateWash解析ツール",
+    page_title="ClimateWash診断ツール",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -240,7 +240,12 @@ def main():
             st.rerun()
         return
     
-    # メインコンテンツ
+    # 診断結果の表示（最優先）
+    if st.session_state.get('current_result') is not None:
+        display_result(st.session_state.current_result, spreadsheet_id, worksheet_name)
+        return
+    
+    # メインコンテンツ（診断画面）
     tabs = st.tabs(["📝 テキスト", "🖼️ 画像", "📄 PDF", "🎬 動画", "🌐 Webサイト"])
     
     # システムプロンプト読み込み
@@ -335,12 +340,12 @@ def handle_text_analysis(api_key, model_key, system_prompt, criteria_sections,
                     'result': result
                 })
                 
+                # ページをリロードして結果を表示
+                st.rerun()
+                
             except Exception as e:
                 st.error(f"❌ エラーが発生しました: {str(e)}")
                 return
-        
-        # 結果表示
-        display_result(result, spreadsheet_id, worksheet_name)
 
 def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
                          version, directive_label, spreadsheet_id, worksheet_name):
@@ -407,12 +412,12 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
                         'result': result
                     })
                     
+                    # ページをリロードして結果を表示
+                    st.rerun()
+                    
                 except Exception as e:
                     st.error(f"❌ エラーが発生しました: {str(e)}")
                     return
-            
-            # 結果表示
-            display_result(result, spreadsheet_id, worksheet_name)
 
 def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
                        version, directive_label, spreadsheet_id, worksheet_name):
@@ -471,11 +476,13 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
                         'result': result
                     })
                     
+                    # ページをリロードして結果を表示
+                    st.rerun()
+                    
                 except Exception as e:
                     st.error(f"❌ エラーが発生しました: {str(e)}")
                     return
             
-            display_result(result, spreadsheet_id, worksheet_name)
 
 def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                          version, directive_label, spreadsheet_id, worksheet_name):
@@ -537,11 +544,13 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                         'result': result
                     })
                     
+                    # ページをリロードして結果を表示
+                    st.rerun()
+                    
                 except Exception as e:
                     st.error(f"❌ エラーが発生しました: {str(e)}")
                     return
             
-            display_result(result, spreadsheet_id, worksheet_name)
 
 def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
                        version, directive_label, spreadsheet_id, worksheet_name):
@@ -605,11 +614,13 @@ def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
                         'result': result
                     })
                     
+                    # ページをリロードして結果を表示
+                    st.rerun()
+                    
                 except Exception as e:
                     st.error(f"❌ エラーが発生しました: {str(e)}")
                     return
             
-            display_result(result, spreadsheet_id, worksheet_name)
 
 def display_result(result, spreadsheet_id, worksheet_name):
     """診断結果を表示"""
@@ -700,8 +711,7 @@ def display_result(result, spreadsheet_id, worksheet_name):
                             success = exporter.export_results(spreadsheet_id, worksheet_name, result)
                             if success:
                                 st.success("✅ スプレッドシートに出力しました！")
-                                # 結果を保持したまま成功メッセージを表示
-                                st.session_state.current_result = result
+                                st.balloons()
                             else:
                                 st.error("❌ 出力に失敗しました")
                 except Exception as e:
