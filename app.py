@@ -93,14 +93,14 @@ def main():
             if model_key == "claude":
                 if "ANTHROPIC_API_KEY" in st.secrets:
                     api_key = st.secrets["ANTHROPIC_API_KEY"]
-                    st.success("✅ Anthropic APIキーを自動読み込みしました")
+                    st.success("✅ Anthropic APIキーを自動読み込みしました。")
                     secret_loaded = True
                 else:
                     st.info("ℹ️ Secretsに ANTHROPIC_API_KEY が設定されていません")
             elif model_key == "openai":
                 if "OPENAI_API_KEY" in st.secrets:
                     api_key = st.secrets["OPENAI_API_KEY"]
-                    st.success("✅ OpenAI APIキーを自動読み込みしました")
+                    st.success("✅ OpenAI APIキーを自動読み込みしました。")
                     secret_loaded = True
                 else:
                     st.info("ℹ️ Secretsに OPENAI_API_KEY が設定されていません")
@@ -389,7 +389,7 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
             
             # メモが空の場合はエラー
             if not image_memo or len(image_memo.strip()) < 5:
-                st.error("❌ 出所メモを入力してください（5文字以上）")
+                st.error("❌ 企業名と出所を入力してください。（5文字以上）")
                 return
             
             # 解析実行
@@ -474,7 +474,7 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
             
             # メモが空の場合はエラー
             if not pdf_memo or len(pdf_memo.strip()) < 5:
-                st.error("❌ 出所メモを入力してください（5文字以上）")
+                st.error("❌ 企業名と出所を入力してください。（5文字以上）")
                 return
             
             # 解析実行
@@ -565,7 +565,7 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
             
             # メモが空の場合はエラー
             if not video_memo or len(video_memo.strip()) < 5:
-                st.error("❌ 出所メモを入力してください（5文字以上）")
+                st.error("❌ 企業名と出所を入力してください。（5文字以上）")
                 return
             with st.spinner("🔄 AI分析中（動画の処理には時間がかかります）..."):
                 try:
