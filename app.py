@@ -366,39 +366,11 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
         
         st.markdown("---")
         
-        # AI自動説明を生成
-        if st.button("🤖 画像内容を自動認識", key="auto_describe_image", help="AIが画像の内容を簡単に説明します"):
-            if not api_key:
-                st.error("❌ APIキーを入力してください")
-            else:
-                with st.spinner("🔄 画像を分析中..."):
-                    try:
-                        uploaded_file.seek(0)
-                        image_data = uploaded_file.read()
-                        
-                        # 簡単な説明を生成
-                        ai_handler = AIHandler(model_key, api_key)
-                        prompt = "この画像に何が写っていますか？企業名、製品名、キャンペーン名、主要なテキストなどを含めて、1-2文で簡潔に説明してください。"
-                        
-                        description = ai_handler.analyze_with_image(
-                            prompt=prompt,
-                            image_data=image_data
-                        )
-                        
-                        st.session_state.image_auto_description = description
-                        st.success("✅ 自動認識完了")
-                    except Exception as e:
-                        st.error(f"❌ 自動認識エラー: {str(e)}")
-        
-        # AI自動説明を表示
-        if 'image_auto_description' in st.session_state and st.session_state.image_auto_description:
-            st.info(f"🤖 **AI自動認識**: {st.session_state.image_auto_description}")
-        
         # 必須メモ欄
         image_memo = st.text_area(
-            "📝 出所メモ（必須）*",
-            placeholder="例: トヨタ自動車のWebサイト（https://...）、花王の新製品キャンペーン広告、社内資料など",
-            help="この画像の出所（会社名、Webサイト、キャンペーン名など）を入力してください。必須項目です。",
+            "📝 企業名と、わかれば出所を記入してください。（必須）*",
+            placeholder="記入例：●●自動車、公式WEBサイトのトップページ画像／●●株式会社、新幹線の車内広告",
+            help="この画像の企業名と出所（Webサイト、広告、パッケージなど）を入力してください。",
             height=80,
             key="image_memo"
         )
@@ -408,9 +380,6 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
             diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_image")
         with col2:
             if st.button("🗑️ 画像クリア", use_container_width=True, key="clear_image"):
-                # セッション状態もクリア
-                if 'image_auto_description' in st.session_state:
-                    del st.session_state.image_auto_description
                 st.rerun()
         
         if diagnose_btn:
@@ -437,11 +406,8 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
                     result['content_type'] = '画像'
                     result['version'] = version
                     result['directives'] = directive_label
-                    # AI説明とメモを記録
-                    content_sample = f"画像ファイル: {uploaded_file.name} | 出所: {image_memo}"
-                    if 'image_auto_description' in st.session_state and st.session_state.image_auto_description:
-                        content_sample += f" | AI認識: {st.session_state.image_auto_description}"
-                    result['content_sample'] = content_sample
+                    # メモを記録
+                    result['content_sample'] = f"画像: {uploaded_file.name} | {image_memo}"
                     
                     st.session_state.current_result = result
                     st.session_state.diagnosis_history.append({
@@ -485,39 +451,11 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
         
         st.markdown("---")
         
-        # AI自動説明を生成
-        if st.button("🤖 PDF内容を自動認識", key="auto_describe_pdf", help="AIがPDFのタイトルや主要内容を抽出します"):
-            if not api_key:
-                st.error("❌ APIキーを入力してください")
-            else:
-                with st.spinner("🔄 PDFを分析中..."):
-                    try:
-                        uploaded_file.seek(0)
-                        pdf_data = uploaded_file.read()
-                        
-                        # PDFから最初のページを抽出して分析
-                        ai_handler = AIHandler(model_key, api_key)
-                        prompt = "このPDFドキュメントのタイトル、発行元（企業名・組織名）、文書の種類（報告書、カタログなど）を1-2文で簡潔に説明してください。"
-                        
-                        description = ai_handler.analyze_with_pdf(
-                            prompt=prompt,
-                            pdf_data=pdf_data
-                        )
-                        
-                        st.session_state.pdf_auto_description = description
-                        st.success("✅ 自動認識完了")
-                    except Exception as e:
-                        st.error(f"❌ 自動認識エラー: {str(e)}")
-        
-        # AI自動説明を表示
-        if 'pdf_auto_description' in st.session_state and st.session_state.pdf_auto_description:
-            st.info(f"🤖 **AI自動認識**: {st.session_state.pdf_auto_description}")
-        
         # 必須メモ欄
         pdf_memo = st.text_area(
-            "📝 出所メモ（必須）*",
-            placeholder="例: トヨタ自動車の統合報告書2024、環境省の政策資料、社内のESG提案書など",
-            help="このPDFの出所（会社名、Webサイト、資料名など）を入力してください。必須項目です。",
+            "📝 企業名と、わかれば出所を記入してください。（必須）*",
+            placeholder="記入例：●●株式会社、プレスリリース／●●銀行、サステナビリティレポート",
+            help="このPDFの企業名と出所（報告書名、資料名など）を入力してください。",
             height=80,
             key="pdf_memo"
         )
@@ -527,9 +465,6 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
             diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_pdf")
         with col2:
             if st.button("🗑️ PDFクリア", use_container_width=True, key="clear_pdf"):
-                # セッション状態もクリア
-                if 'pdf_auto_description' in st.session_state:
-                    del st.session_state.pdf_auto_description
                 st.rerun()
         
         if diagnose_btn:
@@ -555,11 +490,8 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
                     result['content_type'] = 'PDF'
                     result['version'] = version
                     result['directives'] = directive_label
-                    # AI説明とメモを記録
-                    content_sample = f"PDFファイル: {uploaded_file.name} | 出所: {pdf_memo}"
-                    if 'pdf_auto_description' in st.session_state and st.session_state.pdf_auto_description:
-                        content_sample += f" | AI認識: {st.session_state.pdf_auto_description}"
-                    result['content_sample'] = content_sample
+                    # メモを記録
+                    result['content_sample'] = f"PDF: {uploaded_file.name} | {pdf_memo}"
                     
                     st.session_state.current_result = result
                     st.session_state.diagnosis_history.append({
@@ -610,39 +542,11 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
         
         st.markdown("---")
         
-        # AI自動説明を生成
-        if st.button("🤖 動画内容を自動認識", key="auto_describe_video", help="AIが動画の内容を簡単に説明します"):
-            if not api_key:
-                st.error("❌ APIキーを入力してください")
-            else:
-                with st.spinner("🔄 動画を分析中..."):
-                    try:
-                        uploaded_file.seek(0)
-                        video_data = uploaded_file.read()
-                        
-                        # 動画の説明を生成
-                        ai_handler = AIHandler(model_key, api_key)
-                        prompt = "この動画の内容を1-2文で簡潔に説明してください。企業名、製品名、キャンペーン名、主要なメッセージなどを含めてください。"
-                        
-                        description = ai_handler.analyze_with_video(
-                            prompt=prompt,
-                            video_data=video_data
-                        )
-                        
-                        st.session_state.video_auto_description = description
-                        st.success("✅ 自動認識完了")
-                    except Exception as e:
-                        st.error(f"❌ 自動認識エラー: {str(e)}")
-        
-        # AI自動説明を表示
-        if 'video_auto_description' in st.session_state and st.session_state.video_auto_description:
-            st.info(f"🤖 **AI自動認識**: {st.session_state.video_auto_description}")
-        
         # 必須メモ欄
         video_memo = st.text_area(
-            "📝 出所メモ（必須）*",
-            placeholder="例: トヨタのテレビCM 2024、花王の新製品Web動画、社内イベントの記録映像など",
-            help="この動画の出所（会社名、キャンペーン名、放送媒体など）を入力してください。必須項目です。",
+            "📝 企業名と、わかれば出所を記入してください。（必須）*",
+            placeholder="記入例：●●化粧品、WEBの動画広告／●●不動産、テレビCM（××放送）",
+            help="この動画の企業名と出所（CM名、YouTube、イベント名など）を入力してください。",
             height=80,
             key="video_memo"
         )
@@ -652,9 +556,6 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
             diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_video")
         with col2:
             if st.button("🗑️ 動画クリア", use_container_width=True, key="clear_video"):
-                # セッション状態もクリア
-                if 'video_auto_description' in st.session_state:
-                    del st.session_state.video_auto_description
                 st.rerun()
         
         if diagnose_btn:
@@ -675,11 +576,8 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                     result['content_type'] = '動画'
                     result['version'] = version
                     result['directives'] = directive_label
-                    # AI説明とメモを記録
-                    content_sample = f"動画ファイル: {uploaded_file.name} | 出所: {video_memo}"
-                    if 'video_auto_description' in st.session_state and st.session_state.video_auto_description:
-                        content_sample += f" | AI認識: {st.session_state.video_auto_description}"
-                    result['content_sample'] = content_sample
+                    # メモを記録
+                    result['content_sample'] = f"動画: {uploaded_file.name} | {video_memo}"
                     
                     st.session_state.current_result = result
                     st.session_state.diagnosis_history.append({
