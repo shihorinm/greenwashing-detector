@@ -75,7 +75,7 @@ def main():
     with st.sidebar:
         st.markdown("<br>", unsafe_allow_html=True)  # ボタンの上にスペース
         
-        # ホームに戻るボタン（リロード機能）
+        # ホームに戻るボタン（リセット機能）
         if st.button("🏠 ホームに戻る", type="primary", use_container_width=True, key="home_sidebar"):
             # すべての状態をクリア
             st.session_state.current_result = None
@@ -92,7 +92,8 @@ def main():
         model_type = st.radio(
             "使用するAIモデル",
             ["Claude (Sonnet 4.5)", "ChatGPT (GPT-4)"],
-            help="Claude推奨: より詳細な分析が可能"
+            help="Claude推奨: より詳細な分析が可能",
+            label_visibility="collapsed"
         )
         
         model_key = "claude" if "Claude" in model_type else "openai"
@@ -171,7 +172,8 @@ def main():
             options=list(version_options.keys()),
             format_func=lambda x: version_options[x],
             index=0,  # デフォルトはv1
-            help="v1推奨: すべての基準を網羅"
+            help="v1推奨: すべての基準を網羅",
+            label_visibility="collapsed"
         )
         
         version_info = VERSIONS[selected_version]
