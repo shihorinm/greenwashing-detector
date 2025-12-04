@@ -75,8 +75,8 @@ def main():
     with st.sidebar:
         st.markdown("<br>", unsafe_allow_html=True)  # ボタンの上にスペース
         
-        # ホームに戻るボタン
-        if st.button("🏠 ホームに戻る", type="primary", use_container_width=True, key="home_sidebar"):
+        # リロードボタン
+        if st.button("🔄 リロード", type="primary", use_container_width=True, key="reload_sidebar"):
             # すべての状態をクリア
             st.session_state.current_result = None
             st.session_state.show_examples = False
