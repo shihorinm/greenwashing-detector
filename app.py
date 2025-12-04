@@ -24,7 +24,7 @@ from config.criteria import VERSIONS, get_criteria_sections, EXAMPLE_LIBRARY, ge
 
 # ページ設定
 st.set_page_config(
-    page_title="ClimateWash診断ツール",
+    page_title="ClimateWash解析ツール",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
