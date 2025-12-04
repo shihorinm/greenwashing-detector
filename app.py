@@ -73,7 +73,9 @@ def main():
     
     # サイドバー設定
     with st.sidebar:
-        # ホームに戻るボタン（一番上）
+        st.markdown("<br>", unsafe_allow_html=True)  # ボタンの上にスペース
+        
+        # ホームに戻るボタン
         if st.button("🏠 ホームに戻る", type="primary", use_container_width=True, key="home_sidebar"):
             # すべての状態をクリア
             st.session_state.current_result = None
@@ -81,7 +83,6 @@ def main():
             st.session_state.show_history = False
             st.rerun()
         
-        st.markdown("<br>", unsafe_allow_html=True)  # スペース追加
         st.markdown("---")
         
         st.markdown("## ⚙️ 設定")
