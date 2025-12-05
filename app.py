@@ -64,7 +64,7 @@ def main():
     # ヘッダー
     st.markdown("""
     <div style='text-align: center; padding: 20px; background: linear-gradient(90deg, #2E7D32 0%, #43A047 100%); border-radius: 10px;'>
-        <h1 style='color: white; margin: 0;'>🌎 ClimateWash解析ツール🌏</h1>
+        <h1 style='color: white; margin: 0;'>🌎ClimateWash解析ツール🌏</h1>
         <p style='color: white; margin: 10px 0 0 0;'>EU指令の観点に基づくAIスクリーニングシステム</p>
     </div>
     """, unsafe_allow_html=True)
