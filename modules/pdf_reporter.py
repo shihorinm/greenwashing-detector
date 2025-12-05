@@ -98,7 +98,15 @@ def generate_pdf_report(results: Dict[str, Any]) -> bytes:
     # コンテンツタイプ
     content_type = results.get('content_type', '不明')
     story.append(Paragraph(f"コンテンツタイプ: {content_type}", normal_style))
-    story.append(Spacer(1, 2*cm))
+    story.append(Spacer(1, 0.5*cm))
+    
+    # 診断対象
+    content_sample = results.get('content_sample', '')
+    if content_sample:
+        story.append(Paragraph(f"診断対象: {content_sample}", normal_style))
+        story.append(Spacer(1, 2*cm))
+    else:
+        story.append(Spacer(1, 2*cm))
     
     # ページブレイク
     story.append(PageBreak())
