@@ -151,7 +151,7 @@ def extract_audio_from_video(video_data: bytes) -> bytes:
         return b""
 
 def analyze_video_content(ai_handler, video_data: bytes, system_prompt: str,
-                         criteria_sections: list) -> Dict[str, Any]:
+                         criteria_sections: list, additional_context: str = "") -> Dict[str, Any]:
     """
     動画を分析
     
@@ -160,6 +160,7 @@ def analyze_video_content(ai_handler, video_data: bytes, system_prompt: str,
         video_data: 動画データ
         system_prompt: システムプロンプト
         criteria_sections: 適用する診断基準セクション
+        additional_context: 追加の参考情報（企業情報、補足情報など）
         
     Returns:
         分析結果
@@ -190,6 +191,10 @@ def analyze_video_content(ai_handler, video_data: bytes, system_prompt: str,
 
 このフレームのビジュアル要素とテキストを分析してください。
 """
+            
+            # 追加の参考情報があれば追加
+            if additional_context:
+                frame_prompt += f"\n\n【参考情報】\n{additional_context}\n※上記の参考情報も考慮して解析してください。"
             
             try:
                 frame_result = ai_handler.analyze_image(system_prompt, frame_prompt, frame_data)
