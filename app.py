@@ -40,7 +40,7 @@ def auto_save_to_sheet(result, spreadsheet_id, worksheet_name):
 
 # ページ設定
 st.set_page_config(
-    page_title="🌎環境表示解析ツール🌏",
+    page_title="環境表示解析ツール",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -65,7 +65,7 @@ def main():
     st.markdown("""
     <div style='text-align: center; padding: 20px; background: linear-gradient(90deg, #2E7D32 0%, #43A047 100%); border-radius: 10px;'>
         <h1 style='color: white; margin: 0;'>🌎環境表示解析ツール🌏</h1>
-        <p style='color: white; margin: 10px 0 0 0;'>EU指令の観点に基づくグリーンウォッシュスクリーニングシステム</p>
+        <p style='color: white; margin: 10px 0 0 0;'>>EU指令の観点に基づくグリーンウォッシュスクリーニングシステム</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -350,16 +350,24 @@ def handle_text_analysis(api_key, model_key, system_prompt, criteria_sections,
         # 解析実行
         with st.spinner("🔄 AI分析中..."):
             try:
+                # 補足情報を統合
+                additional_context = f"【企業情報・出所】\n{text_memo}"
+                if text_additional_info:
+                    additional_context += f"\n\n【その他参考情報】\n{text_additional_info}"
+                
                 ai_handler = AIHandler(model_key, api_key)
-                ai_response = analyze_text_content(ai_handler, text_input, system_prompt, criteria_sections)
+                ai_response = analyze_text_content(ai_handler, text_input, system_prompt, criteria_sections, additional_context)
                 result = evaluate_result(ai_response)
                 
                 # 結果を保存
                 result['content_type'] = 'テキスト'
                 result['version'] = version
                 result['directives'] = directive_label
-                # メモとテキストの冒頭を記録
-                result['content_sample'] = f"テキスト: {text_memo} | 内容: {text_input[:100]}..."
+                # メモと補足情報とテキストの冒頭を記録
+                content_sample = f"テキスト: {text_memo} | 内容: {text_input[:100]}..."
+                if text_additional_info:
+                    content_sample = f"テキスト: {text_memo} | 参考情報: {text_additional_info} | 内容: {text_input[:100]}..."
+                result['content_sample'] = content_sample
                 
                 st.session_state.current_result = result
                 st.session_state.diagnosis_history.append({
@@ -653,15 +661,23 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
                 return
             with st.spinner("🔄 AI分析中（動画の処理には時間がかかります）..."):
                 try:
+                    # 補足情報を統合
+                    additional_context = f"【企業情報・出所】\n{video_memo}"
+                    if video_additional_info:
+                        additional_context += f"\n\n【その他参考情報】\n{video_additional_info}"
+                    
                     ai_handler = AIHandler(model_key, api_key)
-                    ai_response = analyze_video_content(ai_handler, video_data, system_prompt, criteria_sections)
+                    ai_response = analyze_video_content(ai_handler, video_data, system_prompt, criteria_sections, additional_context)
                     result = evaluate_result(ai_response)
                     
                     result['content_type'] = '動画'
                     result['version'] = version
                     result['directives'] = directive_label
-                    # メモを記録
-                    result['content_sample'] = f"動画: {uploaded_file.name} | {video_memo}"
+                    # メモと補足情報を記録
+                    content_sample = f"動画: {uploaded_file.name} | {video_memo}"
+                    if video_additional_info:
+                        content_sample += f" | 参考情報: {video_additional_info}"
+                    result['content_sample'] = content_sample
                     
                     st.session_state.current_result = result
                     st.session_state.diagnosis_history.append({
@@ -723,6 +739,14 @@ def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
             key="web_memo"
         )
         
+        # その他参考情報（任意）
+        web_additional_info = st.text_area(
+            "📋 その他参考情報（任意）",
+            help="解析の参考となる追加情報があれば入力してください。",
+            height=60,
+            key="web_additional_info"
+        )
+        
         col1, col2 = st.columns([1, 4])
         with col1:
             diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_web")
@@ -743,15 +767,23 @@ def handle_web_analysis(api_key, model_key, system_prompt, criteria_sections,
             # 解析実行
             with st.spinner("🔄 AI分析中（Webページの処理には時間がかかります）..."):
                 try:
+                    # 補足情報を統合
+                    additional_context = f"【企業情報・出所】\n{web_memo}"
+                    if web_additional_info:
+                        additional_context += f"\n\n【その他参考情報】\n{web_additional_info}"
+                    
                     ai_handler = AIHandler(model_key, api_key)
-                    ai_response = analyze_web_content(ai_handler, url_input, system_prompt, criteria_sections)
+                    ai_response = analyze_web_content(ai_handler, url_input, system_prompt, criteria_sections, additional_context)
                     result = evaluate_result(ai_response)
                     
                     result['content_type'] = 'Webサイト'
                     result['version'] = version
                     result['directives'] = directive_label
-                    # メモとURLを記録
-                    result['content_sample'] = f"Web: {web_memo} | URL: {url_input}"
+                    # メモと補足情報とURLを記録
+                    content_sample = f"Web: {web_memo} | URL: {url_input}"
+                    if web_additional_info:
+                        content_sample = f"Web: {web_memo} | 参考情報: {web_additional_info} | URL: {url_input}"
+                    result['content_sample'] = content_sample
                     
                     st.session_state.current_result = result
                     st.session_state.diagnosis_history.append({
