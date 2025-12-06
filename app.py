@@ -40,7 +40,7 @@ def auto_save_to_sheet(result, spreadsheet_id, worksheet_name):
 
 # ページ設定
 st.set_page_config(
-    page_title="ClimateWash解析ツール",
+    page_title="🌎環境表示解析ツール🌏",
     page_icon="🌍",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -419,6 +419,14 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
             key="image_memo"
         )
         
+        # その他参考情報（任意）
+        image_additional_info = st.text_area(
+            "📋 その他参考情報（任意）",
+            help="解析の参考となる追加情報があれば入力してください。過去の指摘事例、業界の文脈など。",
+            height=60,
+            key="image_additional_info"
+        )
+        
         col1, col2 = st.columns([1, 4])
         with col1:
             diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_image")
@@ -442,16 +450,24 @@ def handle_image_analysis(api_key, model_key, system_prompt, criteria_sections,
                     uploaded_file.seek(0)  # ファイルポインタをリセット
                     image_data = uploaded_file.read()
                     
+                    # 補足情報を統合
+                    additional_context = f"【企業情報・出所】\n{image_memo}"
+                    if image_additional_info:
+                        additional_context += f"\n\n【その他参考情報】\n{image_additional_info}"
+                    
                     ai_handler = AIHandler(model_key, api_key)
-                    ai_response = analyze_image_content(ai_handler, image_data, system_prompt, criteria_sections)
+                    ai_response = analyze_image_content(ai_handler, image_data, system_prompt, criteria_sections, additional_context)
                     result = evaluate_result(ai_response)
                     
                     # 結果を保存
                     result['content_type'] = '画像'
                     result['version'] = version
                     result['directives'] = directive_label
-                    # メモを記録
-                    result['content_sample'] = f"画像: {uploaded_file.name} | {image_memo}"
+                    # メモと補足情報を記録
+                    content_sample = f"画像: {uploaded_file.name} | {image_memo}"
+                    if image_additional_info:
+                        content_sample += f" | 参考情報: {image_additional_info}"
+                    result['content_sample'] = content_sample
                     
                     st.session_state.current_result = result
                     st.session_state.diagnosis_history.append({
@@ -504,6 +520,14 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
             key="pdf_memo"
         )
         
+        # その他参考情報（任意）
+        pdf_additional_info = st.text_area(
+            "📋 その他参考情報（任意）",
+            help="解析の参考となる追加情報があれば入力してください。",
+            height=60,
+            key="pdf_additional_info"
+        )
+        
         col1, col2 = st.columns([1, 4])
         with col1:
             diagnose_btn = st.button("🔍 解析開始", type="primary", use_container_width=True, key="diagnose_pdf")
@@ -527,15 +551,23 @@ def handle_pdf_analysis(api_key, model_key, system_prompt, criteria_sections,
                     uploaded_file.seek(0)
                     pdf_data = uploaded_file.read()
                     
+                    # 補足情報を統合
+                    additional_context = f"【企業情報・出所】\n{pdf_memo}"
+                    if pdf_additional_info:
+                        additional_context += f"\n\n【その他参考情報】\n{pdf_additional_info}"
+                    
                     ai_handler = AIHandler(model_key, api_key)
-                    ai_response = analyze_pdf_content(ai_handler, pdf_data, system_prompt, criteria_sections)
+                    ai_response = analyze_pdf_content(ai_handler, pdf_data, system_prompt, criteria_sections, additional_context)
                     result = evaluate_result(ai_response)
                     
                     result['content_type'] = 'PDF'
                     result['version'] = version
                     result['directives'] = directive_label
-                    # メモを記録
-                    result['content_sample'] = f"PDF: {uploaded_file.name} | {pdf_memo}"
+                    # メモと補足情報を記録
+                    content_sample = f"PDF: {uploaded_file.name} | {pdf_memo}"
+                    if pdf_additional_info:
+                        content_sample += f" | 参考情報: {pdf_additional_info}"
+                    result['content_sample'] = content_sample
                     
                     st.session_state.current_result = result
                     st.session_state.diagnosis_history.append({
@@ -593,6 +625,14 @@ def handle_video_analysis(api_key, model_key, system_prompt, criteria_sections,
             help="この動画の企業名と出所（CM名、YouTube、イベント名など）を入力してください。",
             height=80,
             key="video_memo"
+        )
+        
+        # その他参考情報（任意）
+        video_additional_info = st.text_area(
+            "📋 その他参考情報（任意）",
+            help="解析の参考となる追加情報があれば入力してください。",
+            height=60,
+            key="video_additional_info"
         )
         
         col1, col2 = st.columns([1, 4])
